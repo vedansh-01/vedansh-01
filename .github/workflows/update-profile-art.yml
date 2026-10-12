@@ -1,4 +1,4 @@
-name: Update streak stats
+name: Update profile art
 
 "on":
   schedule:
@@ -6,15 +6,26 @@ name: Update streak stats
   workflow_dispatch: {}
   push:
     branches: [main]
+    paths-ignore: ["*.svg", "data/**"]
 
 permissions:
   contents: write
 
 jobs:
-  streak:
+  update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild heatmap
+        run: |
+          pip install requests beautifulsoup4 lxml
+          python scripts/fetch_contributions.py
+          python scripts/render_heatmap_svg.py
 
       - name: Generate streak stats
         uses: DenverCoder1/github-readme-streak-stats@main
@@ -25,5 +36,5 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: refresh streak stats [skip ci]"
-          file_pattern: "streak-stats.svg"
+          commit_message: "chore: refresh profile art [skip ci]"
+          file_pattern: "streak-stats.svg contrib-heatmap.svg data/contributions.json"
